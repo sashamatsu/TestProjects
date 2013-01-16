@@ -1,6 +1,9 @@
 package com.avm.test.loginloadtest;
 
+import java.util.HashMap;
+
 import com.avm.test.loginloadtest.managers.LoginManager;
+import com.avm.test.loginloadtest.managers.ManagerMessages;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +11,7 @@ import android.os.Message;
 import android.app.Activity;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,6 +21,8 @@ public class MainActivity extends Activity {
 	private EditText tbxNumberOfThreads;
 	private TextView lblThreadCount;
 	private ProgressBar progressBar;
+	private Button testButton;
+	private HashMap threadMap;
 	
 	private LoginManager mLoginManager=null;
 	
@@ -30,6 +36,7 @@ public class MainActivity extends Activity {
         tbxNumberOfThreads=(EditText)findViewById(R.id.tbxNumberOfThreads);
         lblThreadCount=(TextView)findViewById(R.id.lblThreadCount);
         progressBar=(ProgressBar)findViewById(R.id.progressBar);
+        testButton=(Button)findViewById(R.id.button1);
         
         if(mLoginManager!=null){
         	mLoginManager.setHandler(mLoginHandler);
@@ -52,8 +59,9 @@ public class MainActivity extends Activity {
     	progressBar.setMax(numberOfThreads);
     	progressBar.setProgress(numberOfThreads);
     	lblThreadCount.setText("Thread Count: "+ numberOfThreads);
-    	mLoginManager.login("empireadmin", "g00fba11", this, numberOfThreads);
-    	
+    	threadMap=mLoginManager.prepareManager(numberOfThreads,"empireadmin", "g00fba11", this);
+        testButton.setEnabled(false);
+        mLoginManager.runLoginTest();
     }//end runLoatTest
     
     
@@ -64,8 +72,13 @@ public class MainActivity extends Activity {
 
 			switch (msg.what) {
 
-			case ManagerMessages.HIERARCHY_COMPLETE:
-				break;	
+			case ManagerMessages.VALID_USER:
+				Bundle data=msg.getData();
+				long threadID=data.getLong("threadID");
+				threadMap.remove(threadID);
+				int threadCount=threadMap.size();
+				progressBar.setProgress(threadCount);
+				lblThreadCount.setText("Thread Count: "+ threadCount);
 			}// end switch
 		}// end handleMessage
 	};

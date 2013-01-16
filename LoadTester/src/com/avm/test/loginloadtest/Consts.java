@@ -49,7 +49,7 @@ public class Consts {
 	public static String APP_LANDER_URL="https://www.storeflix.com/applander.aspx";
 	
 	//JSON
-	public static String RESTSERVER="www.storeflix.com";
+	public static String RESTSERVER="dev01.storeflix.com";
 	//public static final String RESTSERVER="192.168.66.78:60500"; //Jamies dynamic ip
 	
 	//LOGIN

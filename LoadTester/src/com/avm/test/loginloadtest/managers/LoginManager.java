@@ -2,10 +2,13 @@ package com.avm.test.loginloadtest.managers;
 
 
 
+import java.util.HashMap;
+
 import com.avm.test.loginloadtest.model.User;
 import com.avm.test.loginloadtest.webservices.LoginSvc;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
@@ -15,28 +18,52 @@ public class LoginManager {
 
 	private static Handler activityHandler = null;
 	private LoginThread loginThread = null;
+	private LoginThread[] testThreads=null;
 
 	public LoginManager(Handler handler) {
 		activityHandler = handler;
 	}// end constructor
 
+	public HashMap prepareManager(int numberOfThreads,String userName,String password,Context context){
+		
+		 HashMap<Long,Integer> threadMap = new HashMap<Long,Integer>();
+		
+		if(numberOfThreads <= 0){
+			numberOfThreads=1;
+		}//end if not valid
+		
+		testThreads=new LoginThread[numberOfThreads];
+		for(int i =0;i<=testThreads.length;i++ ){
+			testThreads[i]=new LoginThread(userName,password,context);
+			threadMap.put(testThreads[i].getId(), i);
+		}//end for threads
+		
+		return threadMap;
+	}//end prepareManager
+	
 	public void setHandler(Handler handler) {
 		activityHandler = handler;
 	}// end setHandler
 
-	public void login(String userName, String password, Context context,int numberOfThreads) {
-		loginThread = new LoginThread(userName, password, context);
-		loginThread.start();
+	public void runLoginTest() {
+		if(testThreads!=null){
+		for(int i =0;i<=testThreads.length;i++ ){
+			testThreads[i].start();
+		}//end for threads
+		}//end not null
 	}// end startDataDownload
 	
 	private void sendErrorMessageToActivity(int message) {
 		activityHandler.sendEmptyMessage(message);
 	}// end sendMessageToActivity
 
-	private void sendSuccessToActivity() {
+	private void sendSuccessToActivity(long threadID) {
 		Message msg=new Message();
 		msg.what=ManagerMessages.VALID_USER;
-		msg.arg1 	
+		Bundle b = new Bundle();
+	    b.putLong("threadID", threadID);
+	    msg.setData(b);
+	    
 		activityHandler.sendMessage(msg);
 	}// end sendMessageToActivity
 
@@ -71,7 +98,7 @@ public class LoginManager {
 							sendErrorMessageToActivity(ManagerMessages.INVALID_USER);
 						}// end if failed to authenticate
 						else {
-								
+						   sendSuccessToActivity(this.getId());	
 						}// end else success
 					}// end else
 				} catch (Exception e) {

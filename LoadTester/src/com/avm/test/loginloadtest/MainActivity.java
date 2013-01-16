@@ -9,20 +9,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.app.Activity;
+import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	private EditText tbxNumberOfThreads;
 	private TextView lblThreadCount;
 	private ProgressBar progressBar;
-	private Button testButton;
+	private Button btnTest;
 	private HashMap threadMap;
+	private Context mContext;
 	
 	private LoginManager mLoginManager=null;
 	
@@ -36,7 +39,7 @@ public class MainActivity extends Activity {
         tbxNumberOfThreads=(EditText)findViewById(R.id.tbxNumberOfThreads);
         lblThreadCount=(TextView)findViewById(R.id.lblThreadCount);
         progressBar=(ProgressBar)findViewById(R.id.progressBar);
-        testButton=(Button)findViewById(R.id.button1);
+        btnTest=(Button)findViewById(R.id.button1);
         
         if(mLoginManager!=null){
         	mLoginManager.setHandler(mLoginHandler);
@@ -44,6 +47,10 @@ public class MainActivity extends Activity {
         else{
         	mLoginManager=new LoginManager(mLoginHandler);
         }//end else
+        
+        if(mContext==null){
+        	mContext=this;
+        }//end if 
         
     }
 
@@ -60,7 +67,7 @@ public class MainActivity extends Activity {
     	progressBar.setProgress(numberOfThreads);
     	lblThreadCount.setText("Thread Count: "+ numberOfThreads);
     	threadMap=mLoginManager.prepareManager(numberOfThreads,"empireadmin", "g00fba11", this);
-        testButton.setEnabled(false);
+        btnTest.setEnabled(false);
         mLoginManager.runLoginTest();
     }//end runLoatTest
     
@@ -77,10 +84,35 @@ public class MainActivity extends Activity {
 				long threadID=data.getLong("threadID");
 				threadMap.remove(threadID);
 				int threadCount=threadMap.size();
+				if(threadCount==0){
+					btnTest.setEnabled(true);
+				}//end if done
 				progressBar.setProgress(threadCount);
 				lblThreadCount.setText("Thread Count: "+ threadCount);
+				break;
+			case ManagerMessages.ERROR:
+			    Toast.makeText(mContext, "Error occured!", Toast.LENGTH_SHORT).show();
+			    mLoginManager.reset();
+				btnTest.setEnabled(true);
+			    break;
+			case ManagerMessages.INVALID_USER:
+				Toast.makeText(mContext, "Invalid User", Toast.LENGTH_SHORT).show();
+				mLoginManager.reset();
+				btnTest.setEnabled(true);
+				break;
+			case ManagerMessages.BAD_SERVICE_DATA:
+				Toast.makeText(mContext, "Bad Data", Toast.LENGTH_SHORT).show();
+				mLoginManager.reset();
+				btnTest.setEnabled(true);
+				break;
+			case ManagerMessages.NOSIGNAL:
+				Toast.makeText(mContext, "No Signal Available", Toast.LENGTH_SHORT).show();
+				mLoginManager.reset();
+				btnTest.setEnabled(true);
+				break;
 			}// end switch
+			
 		}// end handleMessage
 	};
     
-}//end calss
+}//end class

@@ -33,7 +33,7 @@ public class LoginManager {
 		}//end if not valid
 		
 		testThreads=new LoginThread[numberOfThreads];
-		for(int i =0;i<=testThreads.length;i++ ){
+		for(int i =0;i<testThreads.length;i++ ){
 			testThreads[i]=new LoginThread(userName,password,context);
 			threadMap.put(testThreads[i].getId(), i);
 		}//end for threads
@@ -41,13 +41,21 @@ public class LoginManager {
 		return threadMap;
 	}//end prepareManager
 	
+	public void reset(){
+		if(testThreads!=null){
+			for(int i=0;i<testThreads.length;i++){
+				testThreads[i].cancel();
+			}//end for
+		}//end if testThreads
+	}//end reset
+	
 	public void setHandler(Handler handler) {
 		activityHandler = handler;
 	}// end setHandler
 
 	public void runLoginTest() {
 		if(testThreads!=null){
-		for(int i =0;i<=testThreads.length;i++ ){
+		for(int i =0;i<testThreads.length;i++ ){
 			testThreads[i].start();
 		}//end for threads
 		}//end not null
@@ -91,29 +99,33 @@ public class LoginManager {
 					mUser = LoginSvc.login(mUserName, mPwd);
 
 					if (mUser == null) {
-						sendErrorMessageToActivity(ManagerMessages.ERROR);
+						//sendErrorMessageToActivity(ManagerMessages.ERROR);
+						sendSuccessToActivity(this.getId());	
 					}// end if nothing pulled
 					else {
 						if (mUser.getUserID() == -1) {
-							sendErrorMessageToActivity(ManagerMessages.INVALID_USER);
+							//sendErrorMessageToActivity(ManagerMessages.INVALID_USER);
+							sendSuccessToActivity(this.getId());	
 						}// end if failed to authenticate
 						else {
 						   sendSuccessToActivity(this.getId());	
 						}// end else success
 					}// end else
 				} catch (Exception e) {
-					sendErrorMessageToActivity(ManagerMessages.BAD_SERVICE_DATA);
+					//sendErrorMessageToActivity(ManagerMessages.BAD_SERVICE_DATA);
+					sendSuccessToActivity(this.getId());	
 				} 
 			}// end if network available
 
 			else {
-				sendErrorMessageToActivity(ManagerMessages.NOSIGNAL);
+				//sendErrorMessageToActivity(ManagerMessages.NOSIGNAL);
+				sendSuccessToActivity(this.getId());	
 			}// end else
 
 		}// end run
 		
 		public void cancel() {
-
+			interrupt();
 		}// end cancel
 
 	}// end DataDownloadThread
